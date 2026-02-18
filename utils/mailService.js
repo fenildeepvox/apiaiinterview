@@ -43,16 +43,33 @@ transporter.verify(function (error, success) {
 // EXISTING FUNCTIONS
 // ============================================
 
-exports.sendJobLinkEmail = async (to, token) => {
+exports.sendJobLinkEmail = async (to, token, subject, messageTemplate) => {
   try {
-    const link = `https://aiinterview.deepvox.ai/?token=${token}`;
+    const link = `${process.env.AIINTERVIEW_FRONTEND_URL}/?token=${token}`;
+
+    // Use custom subject and message if provided
+    const emailSubject = subject || 'Your AI Interview Link';
+    const emailMessage =
+      messageTemplate ||
+      `You have been invited to participate in an assessment.
+
+Please use the following link to access the assessment:
+
+${link}
+
+This link is valid for 2 days. Please complete the assessment at your earliest convenience.
+
+If you have any questions, please contact the HR department.
+
+Best regards,
+HR Team`;
 
     await transporter.sendMail({
-      from: '"AI Interview" <surbhivasoya11@gmail.com>',
+      from: `AI Assessment <${process.env.EMAIL_USER}>`,
       to,
-      subject: 'Your AI Interview Link',
-      template: 'jobLink',
-      context: { link },
+      subject: emailSubject,
+      text: emailMessage,
+      html: emailMessage.replace(/\n/g, '<br>'),
     });
     return true;
   } catch (error) {
@@ -69,8 +86,15 @@ exports.sendJobLinkEmail = async (to, token) => {
 
 exports.sendStudentExamEmail = async (emailData) => {
   try {
-    const { jobTitle, company, location, examLink, messageTemplate, students } =
-      emailData;
+    const {
+      jobTitle,
+      company,
+      location,
+      examLink,
+      messageTemplate,
+      students,
+      subject,
+    } = emailData;
 
     // Reduced verbose logging for bulk email send
 
@@ -90,7 +114,7 @@ exports.sendStudentExamEmail = async (emailData) => {
         if (messageTemplate) {
           personalizedMessage = messageTemplate.replace(
             /{studentName}/g,
-            student.name
+            student.name,
           );
         } else {
           personalizedMessage = `Dear ${student.name},
@@ -109,9 +133,10 @@ HR Team`;
 
         // Create email
         const mailOptions = {
-          from: '"AI Interview" <surbhivasoya11@gmail.com>',
+          from: `AI Assessment <${process.env.EMAIL_USER}>`,
           to: student.email,
-          subject: `Interview Invitation - ${jobTitle} at ${company}`,
+          subject:
+            subject || `Assessment Invitation - ${jobTitle} at ${company}`,
           html: `
             <!DOCTYPE html>
             <html>
@@ -123,7 +148,7 @@ HR Team`;
               <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                 
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
-                  <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">Interview Invitation</h1>
+                  <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">Assessment Invitation</h1>
                 </div>
                 
                 <div style="padding: 30px;">
@@ -134,7 +159,7 @@ ${personalizedMessage}
                   <div style="text-align: center; margin: 30px 0;">
                     <a href="${examLink}" 
                        style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 50px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
-                      Start Interview
+                      Start Assessment
                     </a>
                   </div>
                   
@@ -150,11 +175,11 @@ ${personalizedMessage}
                   <div style="margin: 25px 0;">
                     <h3 style="color: #333; font-size: 18px; margin-bottom: 15px; font-weight: bold;">Instructions:</h3>
                     <ul style="color: #666; font-size: 14px; line-height: 1.8; padding-left: 20px;">
-                      <li style="margin-bottom: 8px;">Please complete the interview at your earliest convenience</li>
+                      <li style="margin-bottom: 8px;">Please complete the assessment at your earliest convenience</li>
                       <li style="margin-bottom: 8px;">Ensure you have a stable internet connection</li>
                       <li style="margin-bottom: 8px;">Use a computer or laptop with a working camera and microphone</li>
                       <li style="margin-bottom: 8px;">Find a quiet place with good lighting</li>
-                      <li style="margin-bottom: 8px;">The interview will take approximately 30-45 minutes</li>
+                      <li style="margin-bottom: 8px;">The assessment will take approximately 30-45 minutes</li>
                       <li style="margin-bottom: 8px;">Make sure to use your registered email address to join</li>
                     </ul>
                   </div>
@@ -221,7 +246,7 @@ ${personalizedMessage}
 
     // Concise summary
     console.log(
-      `Email send summary: total=${students.length} successful=${successCount} failed=${failCount}`
+      `Email send summary: total=${students.length} successful=${successCount} failed=${failCount}`,
     );
 
     if (failCount > 0) {
@@ -239,77 +264,6 @@ ${personalizedMessage}
     console.error('\n❌ CRITICAL ERROR in sendStudentExamEmail:');
     console.error('   ', error.message);
     console.error('   Stack:', error.stack);
-    throw error;
-  }
-};
-
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
-
-exports.sendIndividualStudentExamEmail = async (studentData) => {
-  try {
-    const { studentName, studentEmail, jobTitle, company, location, examLink } =
-      studentData;
-
-    const mailOptions = {
-      from: '"AI Interview" <surbhivasoya11@gmail.com>',
-      to: studentEmail,
-      subject: `Interview Invitation - ${jobTitle} at ${company}`,
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
-          <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
-              <h1 style="color: white; margin: 0; font-size: 28px;">Interview Invitation</h1>
-            </div>
-            <div style="padding: 30px;">
-              <p style="font-size: 16px; color: #333; line-height: 1.6;">Dear ${studentName},</p>
-              <p style="font-size: 16px; color: #333; line-height: 1.6;">
-                You have been invited to participate in an interview for <strong>${jobTitle}</strong> at <strong>${company}</strong>.
-              </p>
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${examLink}" 
-                   style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 50px; font-size: 16px; font-weight: bold;">
-                  Start Interview
-                </a>
-              </div>
-              <p style="font-size: 14px; color: #666; line-height: 1.6;">
-                Interview Link: <br/>
-                <code style="background: #f4f4f4; padding: 8px; display: inline-block; margin-top: 5px; border-radius: 4px; word-break: break-all;">${examLink}</code>
-              </p>
-              <p style="font-size: 16px; color: #333; line-height: 1.6; margin-top: 25px;">
-                Best regards,<br/>
-                <strong>${company} HR Team</strong>
-              </p>
-            </div>
-            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e0e0e0;">
-              <p style="margin: 0; color: #999; font-size: 12px;">
-                © ${new Date().getFullYear()} ${company}. All rights reserved.
-              </p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `,
-    };
-
-    await transporter.sendMail(mailOptions);
-    console.log(
-      `✅ Individual exam email sent to: ${studentName} (${studentEmail})`
-    );
-
-    return true;
-  } catch (error) {
-    console.error(
-      `❌ Error sending individual exam email to ${studentEmail}:`,
-      error
-    );
     throw error;
   }
 };

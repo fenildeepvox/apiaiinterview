@@ -1,5 +1,5 @@
-const { Sequelize } = require("sequelize");
-require("dotenv").config();
+const { Sequelize } = require('sequelize');
+require('dotenv').config();
 
 const sequelize = new Sequelize(
   process.env.DB_NAME,
@@ -8,7 +8,7 @@ const sequelize = new Sequelize(
   {
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
-    dialect: "postgres",
+    dialect: 'postgres',
     logging: false, // Set to console.log to debug SQL queries
     pool: {
       max: 20,
@@ -25,12 +25,12 @@ const sequelize = new Sequelize(
       underscored: false, // Keep camelCase
       freezeTableName: true, // Don't pluralize table names
     },
-  }
+  },
 );
 
 sequelize
   .authenticate()
-  .then(() => console.log("✅ Connected to PostgreSQL database via Sequelize"))
-  .catch((err) => console.error("❌ Sequelize connection error", err));
+  .then(() => console.log('✅ Connected to PostgreSQL database via Sequelize'))
+  .catch((err) => console.error('❌ Sequelize connection error', err));
 
 module.exports = sequelize;
