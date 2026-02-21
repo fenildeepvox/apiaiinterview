@@ -187,9 +187,12 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      // Category Percentage - Overall + category-wise scores
       categoryPercentage: {
         type: DataTypes.JSONB,
+        allowNull: true,
+      },
+      reason: {
+        type: DataTypes.STRING,
         allowNull: true,
       },
       proctoringAlerts: {

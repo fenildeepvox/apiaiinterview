@@ -126,6 +126,8 @@ const transformJobPostForFrontend = (jobPost) => {
       ? new Date(jobPost.interviewStartDateTime).toISOString()
       : null,
     logoUrl: jobPost.logoUrl || null,
+    durationMode: jobPost.durationMode || 'question',
+    interviewDuration: jobPost.interviewDuration || null,
   };
 
   return transformed;
@@ -154,6 +156,8 @@ exports.createJobPost = async (req, res) => {
       enableVideoRecording = false,
       interviewStartDateTime,
       logoUrl,
+      durationMode,
+      interviewDuration,
     } = req.body;
     const userId = req.user?.id;
 
@@ -191,6 +195,8 @@ exports.createJobPost = async (req, res) => {
         : null,
       userId: userId,
       logoUrl: logoUrl || null,
+      durationMode: durationMode || 'question',
+      interviewDuration: interviewDuration || null,
     };
 
     const jobPost = await JobPost.create(jobPostData, { transaction: t });
@@ -380,6 +386,8 @@ exports.updateJobPost = async (req, res) => {
       questions = [],
       interviewStartDateTime,
       logoUrl,
+      durationMode,
+      interviewDuration,
     } = req.body;
 
     if (!id) return res.status(400).json({ error: 'Job post id is required' });
@@ -407,6 +415,8 @@ exports.updateJobPost = async (req, res) => {
           ? new Date(interviewStartDateTime)
           : jobPost.interviewStartDateTime,
       ...(logoUrl !== undefined && { logoUrl: logoUrl || null }),
+      ...(durationMode !== undefined && { durationMode }),
+      ...(interviewDuration !== undefined && { interviewDuration }),
     };
 
     await jobPost.update(jobPostData, { where: { id } }, { transaction: t });
@@ -1062,7 +1072,17 @@ exports.getPerformanceComparison = async (req, res) => {
       'problemSolving',
       'leadershipPotential',
       'confidenceLevel',
+      'culturalFit',
     ];
+
+    // Also include dynamic categories present in categoryPercentage.categoryWiseScore
+    const dynamicCategories = new Set(
+      candidates.flatMap((candidate) =>
+        candidate.categoryPercentage?.categoryWiseScore
+          ? Object.keys(candidate.categoryPercentage.categoryWiseScore)
+          : [],
+      ),
+    );
 
     skillCategories.forEach((skill) => {
       const skillScores = candidates
@@ -1070,7 +1090,8 @@ exports.getPerformanceComparison = async (req, res) => {
           (candidate) =>
             candidate.performanceBreakdown &&
             candidate.performanceBreakdown[skill] &&
-            candidate.performanceBreakdown[skill].overallAveragePercentage,
+            candidate.performanceBreakdown[skill].overallAveragePercentage !==
+              undefined,
         )
         .map(
           (candidate) =>
@@ -1084,6 +1105,29 @@ exports.getPerformanceComparison = async (req, res) => {
         );
       } else {
         averageScores[skill] = 0;
+      }
+    });
+
+    dynamicCategories.forEach((cat) => {
+      const catScores = candidates
+        .filter(
+          (candidate) =>
+            candidate.categoryPercentage?.categoryWiseScore &&
+            candidate.categoryPercentage.categoryWiseScore[cat] &&
+            candidate.categoryPercentage.categoryWiseScore[cat].percentage !==
+              undefined,
+        )
+        .map(
+          (candidate) =>
+            candidate.categoryPercentage.categoryWiseScore[cat].percentage,
+        );
+
+      if (catScores.length > 0) {
+        averageScores[cat] = Math.round(
+          catScores.reduce((sum, score) => sum + score, 0) / catScores.length,
+        );
+      } else {
+        averageScores[cat] = 0;
       }
     });
 

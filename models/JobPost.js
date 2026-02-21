@@ -3,90 +3,99 @@ module.exports = (sequelize) => {
   const JobPost = sequelize.define('JobPost', {
     jobTitle: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     company: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     department: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     location: {
       type: DataTypes.JSON,
       allowNull: false,
-      defaultValue: []
+      defaultValue: [],
     },
     jobType: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     experienceLevel: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     jobDescription: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: false,
     },
     salaryMin: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: true,
     },
     salaryMax: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: true,
     },
     salaryCurrency: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
     status: {
       type: DataTypes.ENUM('draft', 'active', 'paused', 'closed'),
       defaultValue: 'draft',
-      allowNull: false
+      allowNull: false,
     },
     createdBy: {
       type: DataTypes.STRING,
       defaultValue: 'admin',
-      allowNull: false
+      allowNull: false,
     },
     shareableUrl: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
     applicants: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
-      allowNull: false
+      allowNull: false,
     },
     interviews: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
-      allowNull: false
+      allowNull: false,
     },
     activeJoinUser: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
     activeJoinUserCount: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
-      allowNull: false
+      allowNull: false,
     },
     enableVideoRecording: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
-      allowNull: false
+      allowNull: false,
     },
     interviewStartDateTime: {
       type: DataTypes.DATE,
-      allowNull: true
+      allowNull: true,
     },
     logoUrl: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
+    },
+    durationMode: {
+      type: DataTypes.ENUM('question', 'interview'),
+      defaultValue: 'question',
+      allowNull: false,
+    },
+    interviewDuration: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
     },
   });
   return JobPost;

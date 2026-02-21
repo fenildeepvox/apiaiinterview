@@ -31,9 +31,12 @@ const studentController = {
       // Validate each student
       const errors = [];
       students.forEach((student, index) => {
-        if (!student.name) errors.push(`Student ${index + 1}: name is required`);
-        if (!student.email) errors.push(`Student ${index + 1}: email is required`);
-        if (!student.phoneNumber) errors.push(`Student ${index + 1}: phoneNumber is required`);
+        if (!student.name)
+          errors.push(`Student ${index + 1}: name is required`);
+        if (!student.email)
+          errors.push(`Student ${index + 1}: email is required`);
+        if (!student.phoneNumber)
+          errors.push(`Student ${index + 1}: phoneNumber is required`);
       });
 
       if (errors.length > 0) {
@@ -54,17 +57,25 @@ const studentController = {
         },
       });
 
-      if (existingStudents.length > 0) {
-        const duplicateEmails = existingStudents.map((s) => s.email);
+      // Filter out duplicate emails — only keep students not already in DB
+      const duplicateEmails = existingStudents.map((s) =>
+        s.email.toLowerCase(),
+      );
+      const newStudents = students.filter(
+        (s) => !duplicateEmails.includes(s.email.toLowerCase()),
+      );
+
+      if (newStudents.length === 0) {
         return res.status(409).json({
           success: false,
-          message: 'Some students already exist for this job post',
+          message: 'All students already exist for this job post',
           duplicateEmails: duplicateEmails,
+          addedCount: 0,
         });
       }
 
-      // Create students using ONLY existing database columns
-      const studentsToCreate = students.map((student) => ({
+      // Create students using ONLY existing database columns (duplicates skipped)
+      const studentsToCreate = newStudents.map((student) => ({
         name: student.name,
         email: student.email.toLowerCase(),
         mobile: student.phoneNumber, // Store phone in 'mobile' column
@@ -73,15 +84,17 @@ const studentController = {
         appliedDate: new Date(),
       }));
 
-      const createdStudents = await StudentsWithJobPost.bulkCreate(studentsToCreate);
+      const createdStudents =
+        await StudentsWithJobPost.bulkCreate(studentsToCreate);
 
       console.log('✅ Students created successfully:', createdStudents.length);
 
       return res.status(201).json({
         success: true,
-        message: `${createdStudents.length} students added successfully`,
+        message: `${createdStudents.length} student(s) added successfully${duplicateEmails.length > 0 ? `, ${duplicateEmails.length} duplicate(s) skipped` : ''}`,
         count: createdStudents.length,
         students: createdStudents,
+        skippedDuplicates: duplicateEmails,
       });
     } catch (error) {
       console.error('❌ Create students error:', error);
@@ -257,7 +270,8 @@ const studentController = {
         appliedDate: new Date(),
       }));
 
-      const createdStudents = await StudentsWithJobPost.bulkCreate(studentsToCreate);
+      const createdStudents =
+        await StudentsWithJobPost.bulkCreate(studentsToCreate);
 
       console.log('✅ Students updated successfully:', createdStudents.length);
 

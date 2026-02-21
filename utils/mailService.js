@@ -65,7 +65,7 @@ Best regards,
 HR Team`;
 
     await transporter.sendMail({
-      from: `AI Assessment <${process.env.EMAIL_USER}>`,
+      from: `Apprentice Assessment <${process.env.EMAIL_USER}>`,
       to,
       subject: emailSubject,
       text: emailMessage,
@@ -133,7 +133,7 @@ HR Team`;
 
         // Create email
         const mailOptions = {
-          from: `AI Assessment <${process.env.EMAIL_USER}>`,
+          from: `Apprentice Assessment <${process.env.EMAIL_USER}>`,
           to: student.email,
           subject:
             subject || `Assessment Invitation - ${jobTitle} at ${company}`,
