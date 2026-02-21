@@ -48,7 +48,7 @@ exports.sendJobLinkEmail = async (to, token, subject, messageTemplate) => {
     const link = `${process.env.AIINTERVIEW_FRONTEND_URL}/?token=${token}`;
 
     // Use custom subject and message if provided
-    const emailSubject = subject || 'Your AI Interview Link';
+    const emailSubject = subject || 'Your AI Assessment Link';
     const emailMessage =
       messageTemplate ||
       `You have been invited to participate in an assessment.
@@ -119,13 +119,13 @@ exports.sendStudentExamEmail = async (emailData) => {
         } else {
           personalizedMessage = `Dear ${student.name},
 
-You have been invited to participate in an interview for the position of ${jobTitle} at ${company}.
+You have been invited to participate in an assessment for the position of ${jobTitle} at ${company}.
 
-Please use the examination link provided to access the interview. This link is unique to you and should not be shared with others.
+Please use the examination link provided to access the assessment. This link is unique to you and should not be shared with others.
 
-Interview Link: ${examLink}
+Assessment Link: ${examLink}
 
-Please complete the interview at your earliest convenience. If you have any questions, please contact the HR department.
+Please complete the assessment at your earliest convenience. If you have any questions, please contact the HR department.
 
 Best regards,
 HR Team`;

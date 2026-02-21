@@ -532,7 +532,7 @@ exports.linkShareJobPost = async (req, res) => {
       return res.status(404).json({ error: 'Job post not found' });
     }
     const token = jwt.sign({ jobId }, SECRET, { expiresIn: '2d' });
-    
+
     // Send email to each recipient
     const emailList = Array.isArray(email) ? email : [email];
     for (const emailAddress of emailList) {
@@ -543,7 +543,7 @@ exports.linkShareJobPost = async (req, res) => {
         messageTemplate,
       );
     }
-    
+
     return res.status(200).json({ message: 'Email sent successfully' });
   } catch (err) {
     await t.rollback();
@@ -628,6 +628,7 @@ exports.sendStudentExamLink = async (req, res) => {
 // get job post with token
 exports.getJobpostbyToken = async (req, res) => {
   const { token } = req.body;
+  console.log('token', token);
   if (!token) {
     return res.status(400).json({ error: 'token is required' });
   }
@@ -1762,7 +1763,7 @@ exports.getBehavioralAnalysis = async (req, res) => {
       ],
       recommendations: [
         avgScore >= 7
-          ? 'Strong candidate - proceed with next interview round'
+          ? 'Strong candidate - proceed with next assessment round'
           : 'Consider additional assessment',
         'Review video recording for detailed behavioral analysis',
         'Provide feedback on areas identified for improvement',

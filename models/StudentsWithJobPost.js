@@ -30,6 +30,13 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      // Array of education objects:
+      //   - type: 'tenth' | 'plusTwo' | 'degree'
+      //   - schoolName: string (for type 'tenth' or 'plusTwo')
+      //   - collegeName: string (for type 'degree')
+      //   - stream: string
+      //   - percentage: string
+      //   - yearOfPassing: string
       educations: {
         type: DataTypes.JSONB,
         allowNull: true,
@@ -56,7 +63,12 @@ module.exports = (sequelize) => {
         allowNull: true,
       },
       status: {
-        type: DataTypes.ENUM('pending', 'inprogress', 'under_review', 'completed'),
+        type: DataTypes.ENUM(
+          'pending',
+          'inprogress',
+          'under_review',
+          'completed',
+        ),
         allowNull: false,
         defaultValue: 'pending',
       },
@@ -190,7 +202,7 @@ module.exports = (sequelize) => {
       tableName: 'StudentsWithJobPost',
       timestamps: true,
       underscored: false,
-    }
+    },
   );
 
   return StudentsWithJobPost;
