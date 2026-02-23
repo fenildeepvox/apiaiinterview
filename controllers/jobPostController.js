@@ -777,6 +777,7 @@ exports.joinJobPostWithToken = async (req, res) => {
       educations && Array.isArray(educations)
         ? educations
         : allowedStudent.educations || [];
+    const newSkills = skills?.filter((v) => v.trim()?.length > 0) ?? [];
 
     // Update student record with additional info
     await allowedStudent.update(
@@ -790,7 +791,8 @@ exports.joinJobPostWithToken = async (req, res) => {
           highestQualification || allowedStudent.highestQualification,
         educations: educationsArray,
         location: location || allowedStudent.location,
-        skills: skills && skills.length > 0 ? skills : allowedStudent.skills,
+        skills:
+          newSkills && newSkills.length > 0 ? newSkills : allowedStudent.skills,
         region: region || allowedStudent.region,
         residenceLocation:
           residenceLocation || allowedStudent.residenceLocation,
