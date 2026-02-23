@@ -200,6 +200,10 @@ module.exports = (sequelize) => {
         allowNull: true,
         defaultValue: [],
       },
+      pythonSession: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
     },
     {
       tableName: 'StudentsWithJobPost',

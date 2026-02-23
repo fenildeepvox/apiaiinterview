@@ -116,8 +116,7 @@ const transformJobPostForFrontend = (jobPost) => {
     updatedAt: jobPost.updatedAt,
     createdBy: jobPost.createdBy || 'admin',
     shareableUrl: jobPost.shareableUrl,
-    applicants: jobPost.applicants || 0,
-    interviews: jobPost.interviews || 0,
+    candidates: jobPost.StudentsWithJobPost || [],
     activeJoinUser: jobPost.activeJoinUser || 0,
     activeJoinUserCount: jobPost.activeJoinUserCount || 0,
     // Expose video recording flag to admin and candidate frontends
@@ -331,7 +330,13 @@ exports.getAllJobPosts = async (req, res) => {
   try {
     const posts = await JobPost.findAll({
       where: { userId: userId },
-      include: fullInclude,
+      include: [
+        ...fullInclude,
+        {
+          model: StudentsWithJobPost,
+          as: 'StudentsWithJobPost',
+        },
+      ],
       order: [['createdAt', 'DESC']],
     });
 
@@ -794,7 +799,6 @@ exports.joinJobPostWithToken = async (req, res) => {
       { transaction: t },
     );
 
-    await job.increment('applicants', { by: 1 });
     await job.reload();
 
     await t.commit();
@@ -926,14 +930,6 @@ exports.updateStudentWithJobpostById = async (req, res) => {
       { ...data },
       { where: { id: candidateId }, transaction: t }, // ✅ transaction goes inside same object
     );
-
-    if (deletedQues === 0) {
-      await JobPost.increment('interviews', {
-        by: 1,
-        where: { id: candidate.jobPostId },
-        transaction: t,
-      });
-    }
 
     if (questions.length > 0) {
       await StudentInterviewAnswer.bulkCreate(questions, {
