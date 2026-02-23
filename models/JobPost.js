@@ -97,6 +97,10 @@ module.exports = (sequelize) => {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    pythonSession: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   });
   return JobPost;
 };
