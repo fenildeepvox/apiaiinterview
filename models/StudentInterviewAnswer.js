@@ -1,11 +1,11 @@
-const { DataTypes } = require("sequelize");
+const { DataTypes } = require('sequelize');
 module.exports = (sequelize) => {
-  const StudentInterviewAnswer = sequelize.define("StudentInterviewAnswer", {
+  const StudentInterviewAnswer = sequelize.define('StudentInterviewAnswer', {
     answer: { type: DataTypes.TEXT },
     aiEvaluation: { type: DataTypes.TEXT },
     score: { type: DataTypes.INTEGER },
-    responseTime: { type: DataTypes.INTEGER },
-    endTime: { type: DataTypes.INTEGER },
+    responseTime: { type: DataTypes.BIGINT },
+    endTime: { type: DataTypes.BIGINT },
   });
   return StudentInterviewAnswer;
 };
