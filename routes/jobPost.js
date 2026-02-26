@@ -12,6 +12,10 @@ const path = require('path');
 // MULTER CONFIGURATION
 // ============================================
 
+// Max video size: 500 MB (must match or be lower than Nginx client_max_body_size)
+const MAX_VIDEO_SIZE_MB = 500;
+const MAX_VIDEO_SIZE_BYTES = MAX_VIDEO_SIZE_MB * 1024 * 1024;
+
 const storagevideo = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, '../uploads'));
@@ -26,7 +30,10 @@ const storagevideo = multer.diskStorage({
   },
 });
 
-const uploadvideo = multer({ storage: storagevideo });
+const uploadvideo = multer({
+  storage: storagevideo,
+  limits: { fileSize: MAX_VIDEO_SIZE_BYTES },
+});
 
 // Configure storage for resumes and files
 const storage = new multer.memoryStorage();
@@ -59,26 +66,45 @@ router.post('/update-candidate-byid', jobPostController.updateStudentWithJobpost
 router.get('/get-candidate-byid/:id', jobPostController.getCandidateById);
 router.post('/behavioral-analysis', jobPostController.getBehavioralAnalysis);
 
-// Candidate uploads
-router.post('/upload-interview-video', uploadvideo.single('video'), (req, res) => {
-  console.log(req.file, 'file Name:', req.body.fileName);
+// Candidate uploads (with multer error handling for file size & other limits)
+router.post('/upload-interview-video', (req, res) => {
+  uploadvideo.single('video')(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        res.setHeader('Content-Type', 'application/json');
+        return res.status(413).json({
+          success: false,
+          message: `Video exceeds maximum size of ${MAX_VIDEO_SIZE_MB} MB. Please record a shorter interview.`,
+          code: 'LIMIT_FILE_SIZE',
+          maxSizeMB: MAX_VIDEO_SIZE_MB,
+        });
+      }
+      console.error('❌ Video upload multer error:', err);
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(500).json({
+        success: false,
+        message: err.message || 'Video upload failed.',
+      });
+    }
 
-  console.time('Video Upload');
-  if (!req.file) return res.status(400).send('No file uploaded.');
-  console.timeEnd('Video Upload');
+    console.log(req.file, 'file Name:', req.body.fileName);
+    console.time('Video Upload');
+    if (!req.file) {
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(400).json({ success: false, message: 'No file uploaded.' });
+    }
+    console.timeEnd('Video Upload');
+    console.log('✅ File saved to disk:', req.file.path);
 
-  console.log('✅ File saved to disk:', req.file.path);
-
-  // Prepare the response data
-  const responseData = {
-    message: 'Video uploaded successfully',
-    fileName: req.file.filename,
-    path: `uploads/${req.file.filename}`,
-  };
-
-  // Set content type and end the response with JSON
-  res.setHeader('Content-Type', 'application/json');
-  res.end(JSON.stringify(responseData));
+    const responseData = {
+      success: true,
+      message: 'Video uploaded successfully',
+      fileName: req.file.filename,
+      path: `uploads/${req.file.filename}`,
+    };
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(responseData));
+  });
 });
 
 router.post('/upload-resume', upload.single('file'), uploadFileController.UploadResume);
