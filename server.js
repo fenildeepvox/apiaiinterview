@@ -36,10 +36,10 @@ app.get('/api/image-base64', async (req, res) => {
 });
 
 // ROUTES
-app.use('/api/ai-analytics', aiAnalyticsRoutes);
 app.use('/api', userRoutes);
 app.use('/api/jobposts', jobPostRoutes);
 app.use('/api', studentRoutes);
+app.use('/api/ai-analytics', aiAnalyticsRoutes);
 
 // DATABASE INIT + SERVER START
 (async () => {
