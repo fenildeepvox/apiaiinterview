@@ -8,6 +8,7 @@ const axios = require('axios');
 const userRoutes = require('./routes/user');
 const jobPostRoutes = require('./routes/jobPost');
 const studentRoutes = require('./routes/student');
+const aiAnalyticsRoutes = require('./routes/aiAnalytics');
 
 const app = express();
 
@@ -28,11 +29,14 @@ app.get('/api/image-base64', async (req, res) => {
     return res.status(200).json({ success: true, base64: base64 });
   } catch (error) {
     console.error('Error getting image base64:', error);
-    return res.status(500).json({ success: false, error: 'Error getting image base64' });
+    return res
+      .status(500)
+      .json({ success: false, error: 'Error getting image base64' });
   }
 });
 
 // ROUTES
+app.use('/api/ai-analytics', aiAnalyticsRoutes);
 app.use('/api', userRoutes);
 app.use('/api/jobposts', jobPostRoutes);
 app.use('/api', studentRoutes);
